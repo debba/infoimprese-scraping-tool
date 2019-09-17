@@ -33,7 +33,7 @@ You can setup a mode, you can learn about it following the next section.
 You can choose one of the following scraping modes:
 
 - _search_by_name_ (_Ricercando nel Nome_ in the website)
-- _search_by_desc_ (_Ricercando nella Descrizione attività	_ in the website)
+- _search_by_desc_ (_Ricercando nella Descrizione attività_ in the website)
 - _with_dash_ (_con la Vetrina su infoimprese.it_ in the website)
 - _with_cert_ (_con certificazione di qualità_ in the website)
 - _with_dash_ (_che praticano e-commerce_ in the website)
