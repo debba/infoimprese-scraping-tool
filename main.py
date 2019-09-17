@@ -1,24 +1,20 @@
-from src.utils import get_captcha, get_pec
-import math
-from src.infoimprese import Scraper, ScraperException
-from lxml import html
+import json
 import os
+
+from src.infoimprese import Scraper, ScraperException
+
+CONFIG_FILE = "conf/config.json"
 
 if __name__ == "__main__":
 
-    '''
-    url = 'http://www.infoimprese.it/impr/ricerca/popup_vetrina.jsp?ID=ltXigy7w0WgH&CHIAVE=ujoRqOQ1v6myCt93ZV0IZQ0%3D'
-    api_key = 'ebee9ed945b9fa48cc6605694406b3c5'
-    site_key = '6LefyWAUAAAAAA-MerRO-4rzv0C5RTS1CorjEwhl'  # grab from site
+    if not os.path.exists(CONFIG_FILE):
+        print("No config file found. Exit.")
+        exit(0)
 
-    pec = get_pec(url, api_key, site_key)
-    print(pec)
-    '''
+    f = open(CONFIG_FILE)
+    config = json.load(f)
 
     try:
-        Scraper(query="ottica", where="milano", api_keys={
-            "api_key": "ebee9ed945b9fa48cc6605694406b3c5",
-            "site_key": "6LefyWAUAAAAAA-MerRO-4rzv0C5RTS1CorjEwhl"
-        })
+        Scraper(query="ottica", where="milano", api_keys=config['anticaptcha'])
     except ScraperException as se:
         print("Error: " + str(se))
