@@ -1,6 +1,5 @@
 import json
 import os
-
 from src.infoimprese import Scraper, ScraperException
 
 CONFIG_FILE = "conf/config.json"
@@ -15,6 +14,6 @@ if __name__ == "__main__":
     config = json.load(f)
 
     try:
-        Scraper(query="ottica", where="milano", api_keys=config['anticaptcha'])
+        Scraper(query="ottica", where="milano", config=config)
     except ScraperException as se:
         print("Error: " + str(se))
