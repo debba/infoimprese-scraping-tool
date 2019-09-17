@@ -1,7 +1,7 @@
 import requests
 from lxml import html
 from src.decrypt import get_captcha, get_pec
-from src.tree import get_contact_by_crawled_page
+from src.tree import get_contact_by_crawled_page, get_result_pages, count_from_search
 import math
 
 API_ENDPOINT = "https://www.infoimprese.it/impr"
@@ -37,6 +37,8 @@ class Scraper:
         "ricerca": "",
         "g-recaptcha-response": ""
     }
+    totResults = 0
+    totPages = 1
 
     def set_query_params(self, dove, ricerca, page=None):
         self.queryParams['dove'] = dove
@@ -44,53 +46,11 @@ class Scraper:
         if page is not None:
             self.queryParams['page'] = page
 
-    def get_pages(self, text):
-
-        tree = html.fromstring(text)
-        tot_results = int(tree.xpath(
-            '//html/body/center/table[2]/tr[2]/td[1]/table[1]/tr/td/table[2]/tr/td[1]/font/text()[2]')[0].lstrip(
-            ' \xa0 n° '))
-        tot_pages = math.ceil(tot_results / 10)
-
-        pages = []
-
-        for i in range(3, 13):
-            xpath = "/html/body/center/table[2]/tr[2]/td[1]/table[1]/tr/td/table[%d]/tr[2]/td/table/tr/td[2]/a[" \
-                    "1]/@onclick" % i
-
-            try:
-                pages.append("%s/ricerca/%s" % (API_ENDPOINT, tree.xpath(xpath)[0][14:-33]))
-            except IndexError as e:
-                print("ERR: %s" % str(e))
-
-        return pages
-
-    def update_page(self):
-        self.queryParams["pagina"] += 1
-
-    def __init__(self, query=None, where=None, config=None):
-        if query is None:
-            raise ScraperException("Query clause is undefined")
-        if where is None:
-            raise ScraperException("Where clause is undefined")
-
-        if config is not None:
-            self.apiKeys = config['anticaptcha']
-            if config['scraper'] is not None and config['scraper']['fields'] is not None:
-                self.scraperFields = config['scraper']['fields']
-
-        self.query = query
-        self.where = where
-        self.set_query_params(self.where, self.query, 1)
+    def scrape_page(self, page):
+        print("[OPEN PAGE] %d" % page)
+        self.set_query_params(self.where, self.query, page)
 
         s = requests.session()
-
-        s.get(API_ENDPOINT + "/index.jsp", headers={
-            'Referer': 'https://www.infoimprese.it/impr/ricerca/risultati_globale.jsp',
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                          'Chrome/77.0.3865.75 Safari/537.36 '
-        })
-
         url = API_ENDPOINT + "/ricerca/lista_globale.jsp"
 
         self.queryParams['g-recaptcha-response'] = get_captcha(
@@ -110,11 +70,42 @@ class Scraper:
             'cer': 1,
             'statistiche': 'S',
             'tipoRicerca': '1',
-            'indiceFiglio': '3'
+            'indiceFiglio': '3',
+            'indice': self.queryParams['page'],
+            'pagina': self.queryParams['page']-1
         })
 
-        pages = self.get_pages(response.text)
+        tree = html.fromstring(response.text)
+
+        if page == 1:
+            self.totResults, self.totPages = count_from_search(tree)
+            print("[TOTAL RESULTS] %d" % self.totResults)
+            print("[TOTAL PAGES] %d" % self.totPages)
+
+        pages = get_result_pages(tree)
         for page in pages:
-            crawled_page = s.get(page)
+            crawled_page = s.get("%s/%s" % (API_ENDPOINT, page))
             contact = get_contact_by_crawled_page(crawled_page.text, self.scraperFields)
             print(contact)
+
+    def update_page(self):
+        self.queryParams["pagina"] += 1
+
+    def __init__(self, query=None, where=None, config=None):
+        if query is None:
+            raise ScraperException("Query clause is undefined")
+        if where is None:
+            raise ScraperException("Where clause is undefined")
+
+        if config is not None:
+            self.apiKeys = config['anticaptcha']
+            if config['scraper'] is not None and config['scraper']['fields'] is not None:
+                self.scraperFields = config['scraper']['fields']
+
+        self.query = query
+        self.where = where
+        self.scrape_page(1)
+
+        if self.totPages is not 1:
+            for i in range(2, self.totPages):
+                self.scrape_page(i)
