@@ -33,3 +33,4 @@ A complete list:
 main.py [-h] -q QUERY [-l LOCATION] [-o OUTPUT] 
 ```
 
+Enjoy :)
