@@ -1,6 +1,6 @@
-### InfoImprese Scraper Bot 
+## InfoImprese Scraper Bot 
 
-**Config**
+### Config
 
 Before using for the first time this tool you should create a config.json inside the conf folder.
 Please take a look to conf/config.example.json or directly clone it.
@@ -29,7 +29,7 @@ A complete list:
 
 You can setup a mode, you can learn about it following the next section.
 
-**Modes**
+### Modes
 You can choose one of the following scraping modes:
 
 - _search_by_name_ (_Ricercando nel Nome_ in the website)
@@ -41,7 +41,7 @@ You can choose one of the following scraping modes:
 - _with_website_ (_che hanno il sito internet_ in the website)
 - _with_export_ (_che svolgono attività di export_ in the website)
 
-**Usage**
+### Usage
 
 ```
 usage: main.py [-h] -q QUERY [-m MODE] [-l LOCATION] [-o OUTPUT]
@@ -54,3 +54,11 @@ Arguments are:
 - *output* csv file for storing data
 
 Enjoy :)
+
+#### Windows User?
+
+You can use exec.bat in order to have a very basic GUI
+
+### Credits
+
+> Disclaimer: Please Note that this is a research project. I am by no means responsible for any usage of this tool.
