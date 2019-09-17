@@ -2,8 +2,8 @@
 
 **Config**
 
-Before using for the first time the bot you can create a config.json inside the conf folder.
-Please consult conf/config.example.json or directly duplicate it.
+Before using for the first time this tool you should create a config.json inside the conf folder.
+Please take a look to conf/config.example.json or directly clone it.
 
 You can setup an *Anti-Captcha* API keys in order to skip captcha checks,
 please follow how to generate keys from this link:
