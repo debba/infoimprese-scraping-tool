@@ -4,6 +4,7 @@
     "site_key": ""
   },
   "scraper": {
+    "mode": "search_by_name",
     "fields": [
       "Denominazione",
       "Sede legale",

@@ -37,6 +37,7 @@ class Scraper:
         "ricerca": "",
         "g-recaptcha-response": ""
     }
+    mode = None
     totResults = 0
     totPages = 1
     httpSession = None
@@ -62,13 +63,13 @@ class Scraper:
             query_params = {
                 'cer': 1,
                 'statistiche': 'S',
-                'tipoRicerca': '1',
-                'indiceFiglio': '3'
+                'tipoRicerca': self.queryParams['tipoRicerca'],
+                'indiceFiglio': self.queryParams['indiceFiglio']
             }
         else:
             query_params = {
-                'tipoRicerca': '1',
-                'indiceFiglio': '3',
+                'tipoRicerca': self.queryParams['tipoRicerca'],
+                'indiceFiglio': self.queryParams['indiceFiglio'],
                 'indice': page,
                 'pagina': 0,
                 'g-recaptcha-response': ''
@@ -123,7 +124,7 @@ class Scraper:
 
         self.httpSession.post(url, data=self.queryParams)
 
-    def __init__(self, query=None, where=None, config=None, outputFile=None):
+    def __init__(self, query=None, where=None, config=None, output_file=None):
         if query is None:
             raise ScraperException("Query clause is undefined")
         if where is None:
@@ -136,7 +137,36 @@ class Scraper:
 
         self.query = query
         self.where = where
-        self.outputFile = "export.csv" if outputFile is None else outputFile
+        self.mode = config['scraper']['mode']
+        self.outputFile = "export.csv" if output_file is None else output_file
+
+        if self.mode == "search_by_desc":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = ''
+        elif self.mode == "with_dash":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '0'
+        elif self.mode == "with_cert":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '1'
+        elif self.mode == "with_ecom":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '2'
+        elif self.mode == "with_email":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '3'
+        elif self.mode == "with_website":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '4'
+        elif self.mode == "with_export":
+            self.queryParams['tipoRicerca'] = '1'
+            self.queryParams['indiceFiglio'] = '5'
+        else:
+            self.mode = "search_by_name"
+            self.queryParams['tipoRicerca'] = '0'
+            self.queryParams['indiceFiglio'] = ''
+
+        print("[INFO] You select %s mode" % self.mode)
 
         if self.httpSession is None:
             self.httpSession = requests.session()
