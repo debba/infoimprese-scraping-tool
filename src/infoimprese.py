@@ -2,7 +2,7 @@ import requests
 from lxml import html
 from src.decrypt import get_captcha, get_pec
 from src.tree import get_contact_by_crawled_page, get_result_pages, count_from_search
-import math
+import csv
 
 API_ENDPOINT = "https://www.infoimprese.it/impr"
 
@@ -39,6 +39,8 @@ class Scraper:
     }
     totResults = 0
     totPages = 1
+    httpSession = None
+    outputFile = None
 
     def set_query_params(self, dove, ricerca, page=None):
         self.queryParams['dove'] = dove
@@ -48,32 +50,34 @@ class Scraper:
 
     def scrape_page(self, page):
         print("[OPEN PAGE] %d" % page)
-        self.set_query_params(self.where, self.query, page)
+        contacts = []
 
-        s = requests.session()
-        url = API_ENDPOINT + "/ricerca/lista_globale.jsp"
+        url = API_ENDPOINT + "/ricerca/risultati_globale.jsp" if page == 1 else API_ENDPOINT + "/ricerca/pagCaptcha.jsp"
 
-        self.queryParams['g-recaptcha-response'] = get_captcha(
-            url,
-            self.apiKeys['api_key'],
-            self.apiKeys['site_key']
-        )
+        if page == 1:
+            query_params = {
+                'cer': 1,
+                'statistiche': 'S',
+                'tipoRicerca': '1',
+                'indiceFiglio': '3'
+            }
+        else:
+            query_params = {
+                'tipoRicerca': '1',
+                'indiceFiglio': '3',
+                'indice': page,
+                'pagina': 0,
+                'g-recaptcha-response': ''
+            }
 
-        if self.queryParams['g-recaptcha-response'] is None:
-            raise ScraperException("Recaptcha checking failed.")
+        if page > 2:
+            query_params['g-recaptcha-response'] = get_captcha(
+                url,
+                self.apiKeys['api_key'],
+                self.apiKeys['site_key']
+            )
 
-        s.post(url, data=self.queryParams)
-
-        url = API_ENDPOINT + "/ricerca/risultati_globale.jsp"
-
-        response = s.post(url, data={
-            'cer': 1,
-            'statistiche': 'S',
-            'tipoRicerca': '1',
-            'indiceFiglio': '3',
-            'indice': self.queryParams['page'],
-            'pagina': self.queryParams['page']-1
-        })
+        response = self.httpSession.post(url, data=query_params)
 
         tree = html.fromstring(response.text)
 
@@ -84,14 +88,31 @@ class Scraper:
 
         pages = get_result_pages(tree)
         for page in pages:
-            crawled_page = s.get("%s/%s" % (API_ENDPOINT, page))
+            crawled_page = self.httpSession.get("%s/%s" % (API_ENDPOINT, page))
             contact = get_contact_by_crawled_page(crawled_page.text, self.scraperFields)
-            print(contact)
+            contacts.append(contact)
+
+        return contacts
 
     def update_page(self):
         self.queryParams["pagina"] += 1
 
-    def __init__(self, query=None, where=None, config=None):
+    def start_search(self):
+
+        self.set_query_params(self.where, self.query)
+        url = API_ENDPOINT + "/ricerca/lista_globale.jsp"
+        self.queryParams['g-recaptcha-response'] = get_captcha(
+            url,
+            self.apiKeys['api_key'],
+            self.apiKeys['site_key']
+        )
+
+        if self.queryParams['g-recaptcha-response'] is None:
+            raise ScraperException("Recaptcha checking failed.")
+
+        self.httpSession.post(url, data=self.queryParams)
+
+    def __init__(self, query=None, where=None, config=None, outputFile=None):
         if query is None:
             raise ScraperException("Query clause is undefined")
         if where is None:
@@ -104,8 +125,24 @@ class Scraper:
 
         self.query = query
         self.where = where
-        self.scrape_page(1)
+        self.outputFile = "export.csv" if outputFile is None else outputFile
+
+        if self.httpSession is None:
+            self.httpSession = requests.session()
+
+        csvfile = open(self.outputFile, "w", encoding="utf-8")
+
+        w = csv.DictWriter(csvfile,
+                           fieldnames=self.scraperFields,
+                           delimiter=';',
+                           quoting=csv.QUOTE_ALL)
+        w.writeheader()
+
+        self.start_search()
+        w.writerows(self.scrape_page(1))
 
         if self.totPages is not 1:
-            for i in range(2, self.totPages):
-                self.scrape_page(i)
+            for i in range(2, self.totPages + 1):
+                w.writerows(self.scrape_page(i))
+
+        csvfile.close()

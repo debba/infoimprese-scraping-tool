@@ -2,3 +2,4 @@
 venv/
 *.html
 conf/config.json
+/export.csv
