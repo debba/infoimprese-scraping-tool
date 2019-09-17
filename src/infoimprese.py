@@ -49,6 +49,10 @@ class Scraper:
             self.queryParams['page'] = page
 
     def scrape_page(self, page):
+
+        # in case of page 1 we'll use risultati_globale.jsp
+        # if page is > 1 we'll use pagCaptcha.jsp
+
         print("[OPEN PAGE] %d" % page)
         contacts = []
 
@@ -69,6 +73,10 @@ class Scraper:
                 'pagina': 0,
                 'g-recaptcha-response': ''
             }
+
+        # only if page>2 send captcha response
+        # what the fuck did they smoke
+        # in Camera di Commercio ?
 
         if page > 2:
             query_params['g-recaptcha-response'] = get_captcha(
@@ -98,6 +106,9 @@ class Scraper:
         self.queryParams["pagina"] += 1
 
     def start_search(self):
+
+        # yeah it's very important executing
+        # a post request with captcha response
 
         self.set_query_params(self.where, self.query)
         url = API_ENDPOINT + "/ricerca/lista_globale.jsp"

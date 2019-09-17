@@ -1,0 +1,4 @@
+lxml
+requests
+bs4
+python_anticaptcha
