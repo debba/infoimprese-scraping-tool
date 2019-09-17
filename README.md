@@ -27,10 +27,30 @@ A complete list:
 - "Principali paesi di export",
 - "Certificazioni"
 
+You can setup a mode, you can learn about it following the next section.
+
+**Modes**
+You can choose one of the following scraping modes:
+
+- _search_by_name_ (_Ricercando nel Nome_ in the website)
+- _search_by_desc_ (_Ricercando nella Descrizione attività	_ in the website)
+- _with_dash_ (_con la Vetrina su infoimprese.it_ in the website)
+- _with_cert_ (_con certificazione di qualità_ in the website)
+- _with_dash_ (_che praticano e-commerce_ in the website)
+- _with__email_ (_che possiedono l'e-mail_ in the website)
+- _with_website_ (_che hanno il sito internet_ in the website)
+- _with_export_ (_che svolgono attività di export_ in the website)
+
 **Usage**
 
 ```
-main.py [-h] -q QUERY [-l LOCATION] [-o OUTPUT] 
+usage: main.py [-h] -q QUERY [-m MODE] [-l LOCATION] [-o OUTPUT]
 ```
+
+Arguments are:
+- *query* represents your keyword
+- *location* represents where you want search
+- *mode* represent modes (check Modes section)
+- *output* csv file for storing data
 
 Enjoy :)
