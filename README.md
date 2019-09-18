@@ -37,7 +37,7 @@ You can choose one of the following scraping modes:
 - _with_dash_ (_con la Vetrina su infoimprese.it_ in the website)
 - _with_cert_ (_con certificazione di qualità_ in the website)
 - _with_dash_ (_che praticano e-commerce_ in the website)
-- _with__email_ (_che possiedono l'e-mail_ in the website)
+- _with_email_ (_che possiedono l'e-mail_ in the website)
 - _with_website_ (_che hanno il sito internet_ in the website)
 - _with_export_ (_che svolgono attività di export_ in the website)
 
