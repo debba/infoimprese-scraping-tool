@@ -1,4 +1,4 @@
-## InfoImprese Scraper Bot 
+## InfoImprese Scraper Tool 
 
 ### Config
 
